@@ -30,6 +30,7 @@ func Advance(ctx context.Context, current World, provider Provider) (World, erro
 			candidates[i].ID = fmt.Sprintf("proposal-%d-%d", w.Day, i+1)
 		}
 		if err := ValidateCandidates(w, actor, candidates); err != nil {
+			log.Printf("day %d: proposal validation failed: %v", w.Day, err)
 			correction = err.Error()
 			if attempt == 1 {
 				return World{}, err

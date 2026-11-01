@@ -61,8 +61,23 @@ func ValidateCandidates(w World, actor Protagonist, candidates []Proposal) error
 		from, fromOK := factions[p.FromFaction]
 		_, toOK := factions[p.ToFaction]
 		pair := p.FromFaction + ":" + p.ToFaction
-		if p.AuthorID != actor.ID || !fromOK || !toOK || p.FromFaction == p.ToFaction || from.BaseIncome < 1 || seen[pair] || strings.TrimSpace(p.Title) == "" || strings.TrimSpace(p.Reason) == "" {
-			return fmt.Errorf("invalid or duplicate proposal %q: use distinct valid factions, a valid author, a title and a reason", p.Title)
+		if p.AuthorID != actor.ID {
+			return fmt.Errorf("proposal %q has the wrong author", p.Title)
+		}
+		if !fromOK || !toOK {
+			return fmt.Errorf("proposal %q has unknown factions %q → %q; use farmers, merchants, workers or clergy", p.Title, p.FromFaction, p.ToFaction)
+		}
+		if p.FromFaction == p.ToFaction {
+			return fmt.Errorf("proposal %q must transfer between different factions", p.Title)
+		}
+		if from.BaseIncome < 1 {
+			return fmt.Errorf("proposal %q would create negative income", p.Title)
+		}
+		if seen[pair] {
+			return fmt.Errorf("duplicate transfer %s; all three pairs must differ", pair)
+		}
+		if strings.TrimSpace(p.Title) == "" || strings.TrimSpace(p.Reason) == "" {
+			return fmt.Errorf("every proposal requires a nonempty title and reason")
 		}
 		seen[pair] = true
 	}

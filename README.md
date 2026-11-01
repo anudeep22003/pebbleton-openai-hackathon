@@ -33,6 +33,26 @@ Copy `.env.example` to `.env` to change settings. Make loads this file; direct `
 
 Snapshots are atomically written to `data/world.json`. Images belong in `data/images/`. This is a single-process local app: ephemeral disks and multiple backend instances are not supported. Invalid snapshots are reported in the server log and start a fresh Day 0.
 
+## Live OpenAI mode
+
+Set `MOCK_AI=false` and `OPENAI_API_KEY` in your local `.env`, then restart `make backend` (or `make start`). Keep the key out of frontend files and Git. Each day makes two Responses requests and two Decisions requests, with one extra proposal request only if semantic validation fails. A live failure never silently changes to mock decisions; newspaper failure alone uses the factual template.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `MOCK_AI` | `true` | Use repeatable local proposals and decisions |
+| `OPENAI_API_KEY` | unset | Required only in live mode |
+| `OPENAI_TEXT_MODEL` | `gpt-5.4-mini` | Structured proposals and newspaper prose |
+| `OPENAI_DECISIONS_MODEL` | `gpt-6-luna` | Choice distribution and six batched predicates |
+| `OPENAI_IMAGE_MODEL` | `gpt-image-2.5-flare` | Optional editorial illustrations |
+| `GENERATE_IMAGES` | `false` | Optional asynchronous illustration generation |
+| `DATA_DIR` | `./data` | Snapshot and image storage |
+| `PORT` | `8080` | Backend port; update the Vite proxy if changing it |
+| `SEED` | `42` | Sampling seed restored on reset |
+
+Live prompts contain structured current state and at most seven recent factual summaries. The engine samples the `choice` answer's `probabilities` array; it does not use `confidence` or blindly accept the API's preferred `choice`. Probability completeness and bounds are checked before any state is saved.
+
+Request contracts were checked against the official [Decisions guide](https://developers.openai.com/api/docs/guides/decisions), [Structured Outputs guide](https://developers.openai.com/api/docs/guides/structured-outputs), and [image generation guide](https://developers.openai.com/api/docs/guides/image-generation). Tests use local HTTP fixtures and never require API credits.
+
 ## API
 
 - `GET /api/world` returns `{world, running, max_days, mode}`.
