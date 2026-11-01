@@ -57,6 +57,10 @@ summary::-webkit-details-marker {
   margin: auto;
 }
 .app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #eeeae0f5;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -263,15 +267,66 @@ summary::-webkit-details-marker {
 .editorial {
   margin: 0;
 }
-.town-placeholder {
-  text-align: center;
-  background: #dedfc0;
-  padding: 25px 0;
-  font-size: 28px;
+.editorial-art {
+  position: relative;
+  overflow: hidden;
   border-radius: 3px;
+  background: #dedfc0;
 }
-.town-placeholder > div {
-  font-size: 55px;
+.town-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.generated-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+  object-fit: cover;
+}
+.illustration-badge {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  padding: 8px 10px;
+  border-radius: 3px;
+  background: #f8f4e5eb;
+  color: #53674c;
+  font-size: 7px;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+}
+.illustration-badge .spinner {
+  width: 10px;
+  height: 10px;
+}
+.newspaper {
+  animation: arrive 0.4s ease-out;
+}
+.edition-region {
+  scroll-margin-top: 120px;
+}
+.character summary:hover .portrait {
+  transform: rotate(-4deg);
+}
+.portrait {
+  transition: transform 0.2s ease;
+}
+.portrait svg {
+  flex-shrink: 0;
+  margin-top: -7px;
+}
+@keyframes arrive {
+  from {
+    opacity: 0.5;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .editorial figcaption {
   font-size: 6px;
@@ -798,6 +853,9 @@ footer span span {
   }
 }
 @media (max-width: 760px) {
+  .edition-region {
+    scroll-margin-top: 180px;
+  }
   .app-shell {
     padding: 0 16px;
   }

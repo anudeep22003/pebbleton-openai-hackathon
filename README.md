@@ -16,7 +16,7 @@ Open **http://127.0.0.1:8080**. Mock mode is the default and needs no API key. `
 For frontend hot reload, run `make backend` and `make frontend` in separate terminals, then open **http://127.0.0.1:5173**. Vite proxies API and image requests to port 8080.
 
 ```sh
-make test       # focused simulation tests
+make test       # focused backend tests
 make simulate   # complete reproducible 30-day mock story
 make format     # gofmt and Prettier
 ```
@@ -52,6 +52,19 @@ Set `MOCK_AI=false` and `OPENAI_API_KEY` in your local `.env`, then restart `mak
 Live prompts contain structured current state and at most seven recent factual summaries. The engine samples the `choice` answer's `probabilities` array; it does not use `confidence` or blindly accept the API's preferred `choice`. Probability completeness and bounds are checked before any state is saved.
 
 Request contracts were checked against the official [Decisions guide](https://developers.openai.com/api/docs/guides/decisions), [Structured Outputs guide](https://developers.openai.com/api/docs/guides/structured-outputs), and [image generation guide](https://developers.openai.com/api/docs/guides/image-generation). Tests use local HTTP fixtures and never require API credits.
+
+Set `GENERATE_IMAGES=true` in live mode for one GPT Image illustration per new edition. The day commits before image generation starts; the UI polls while artwork is pending. Images are stored locally and survive restart. Image failures keep the newspaper playable and show the local storybook illustration. Mock mode always uses local artwork, even if the image flag is enabled. Restart marks interrupted image jobs failed rather than charging for automatic retries. Reset clears history but leaves old image files on disk.
+
+## Verification and demo notes
+
+Verified locally: production build; full 30-day mock simulation and HTTP run; browser Next Day → changed state → newspaper → historical snapshot → reset; desktop and 390px layouts; two real live days with Responses/Decisions; and a real GPT Image illustration saved and displayed in the second live edition. The full 30-day live run was not exercised.
+
+- `go test -race ./...` covers a repeatable 30-day run, policy replacement/timing, debt, validation, ties, probability extremes, relationships, immutable history, concurrency, persistence and image/reset races.
+- Provider fixtures cover the exact Responses/Decisions request flow, refusals, missing probabilities, HTTP errors and newspaper fallback. Live model output is probabilistic even with a fixed sampling seed.
+- The initial world, Next Day, voting results, historical snapshots and reset are available in mock mode. Inspect the candidate probabilities under each newspaper and expand locals/factions for relationships and loyalties.
+- Newspaper prose is grounded through prompts and supplied resolved facts; there is no separate semantic fact-checking model. The recorded policy, vote tally and dashboard remain authoritative.
+- Fonts use Google Fonts with local serif/sans-serif fallbacks. The mock simulation and local vector artwork work without network access after installing dependencies.
+- No multiplayer, database, fast-forward, account system or additional economics are included.
 
 ## API
 

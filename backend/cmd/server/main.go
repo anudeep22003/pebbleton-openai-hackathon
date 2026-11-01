@@ -41,6 +41,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	generateImages, err := strconv.ParseBool(env("GENERATE_IMAGES", "false"))
+	if err != nil {
+		log.Fatal("GENERATE_IMAGES must be true or false")
+	}
+	if generateImages && !mock {
+		app.EnableIllustrations(provider.(*ai.OpenAI))
+	}
 	address := "127.0.0.1:" + env("PORT", "8080")
 	server := &http.Server{Addr: address, Handler: app.Handler("frontend/dist"), ReadHeaderTimeout: 5 * time.Second}
 	log.Printf("Pebbleton · %s mode · http://%s", mode, address)

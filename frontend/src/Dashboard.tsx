@@ -1,4 +1,5 @@
 import type { Snapshot } from "./types";
+import { CharacterArt } from "./TownArt";
 
 const portraits: Record<string, string> = { pip: "🦊", momo: "🐧", zig: "🐸" };
 const occupations: Record<string, string> = {
@@ -19,7 +20,9 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }) {
         {snapshot.protagonists.map((person) => (
           <details className={`character ${person.id}`} key={person.id}>
             <summary>
-              <span className="portrait">{portraits[person.id]}</span>
+              <span className="portrait">
+                <CharacterArt id={person.id} size={47} />
+              </span>
               <span className="character-name">
                 <b>{person.name}</b>
                 <small>

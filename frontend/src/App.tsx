@@ -133,7 +133,7 @@ export default function App() {
         </div>
       )}
       <main className="main-grid">
-        <section className="edition-region">
+        <section className="edition-region" id="edition">
           <div className="section-heading">
             <span>THE DAILY DISPATCH</span>
             <span>
@@ -172,7 +172,12 @@ export default function App() {
                 className={day === record.day ? "selected" : ""}
                 aria-label={`Read day ${record.day}`}
                 aria-pressed={day === record.day}
-                onClick={() => setSelectedDay(record.day)}
+                onClick={() => {
+                  setSelectedDay(record.day);
+                  document
+                    .getElementById("edition")
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }}
               >
                 <small>DAY</small>
                 <b>{String(record.day).padStart(2, "0")}</b>

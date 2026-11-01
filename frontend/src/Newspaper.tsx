@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { DayRecord, Snapshot } from "./types";
+import { TownArt } from "./TownArt";
 
 const names: Record<string, string> = { pip: "Pip", momo: "Momo", zig: "Zig" };
 export function Newspaper({
@@ -9,6 +11,11 @@ export function Newspaper({
   snapshot: Snapshot;
 }) {
   const proposal = edition?.selected_proposal;
+  const [imageFailed, setImageFailed] = useState(false);
+  const hasImage =
+    edition?.illustration_status === "ready" &&
+    edition.illustration_url &&
+    !imageFailed;
   return (
     <article className="newspaper">
       <div className="paper-topline">
@@ -46,15 +53,29 @@ export function Newspaper({
           : "Forty citizens, three ambitious neighbours, and an alarming number of opinions about one coin."}
       </p>
       <figure className="editorial">
-        <div className="town-placeholder">
-          <span>☀</span>
-          <div>🌳 🏘️ 🏛️ 🏡 🌲</div>
-          <div>🦊 &nbsp; 🐧 &nbsp; 🐸</div>
+        <div className="editorial-art">
+          {hasImage ? (
+            <img
+              className="generated-art"
+              src={edition.illustration_url}
+              alt={`Editorial illustration for day ${edition.day}: ${edition.headline}`}
+              onError={() => setImageFailed(true)}
+            />
+          ) : (
+            <TownArt day={edition?.day} />
+          )}
+          {edition?.illustration_status === "pending" && (
+            <span className="illustration-badge">
+              <span className="spinner" /> OUR ARTIST IS AT WORK
+            </span>
+          )}
         </div>
         <figcaption>
-          PEBBLETON, AS SEEN BY OUR RESIDENT OPTIMIST.{" "}
-          {edition?.illustration_status === "pending" &&
-            "ILLUSTRATION ON ITS WAY…"}
+          {hasImage
+            ? "AN EDITORIAL ILLUSTRATION FROM THE PEBBLETON POST · GPT IMAGE"
+            : "PEBBLETON, AS SEEN BY OUR RESIDENT OPTIMIST."}{" "}
+          {(edition?.illustration_status === "failed" || imageFailed) &&
+            "THE ARTIST MISSED DEADLINE. THE NEWS DID NOT."}
         </figcaption>
       </figure>
       <div className="byline">
@@ -134,6 +155,14 @@ export function Newspaper({
                 .map(
                   (vote) =>
                     `${vote.faction_id}: ${Math.round(vote.support_probability * 100)}% support`,
+                )
+                .join(" · ")}
+            </p>
+            <p>
+              {edition.reactions
+                .map(
+                  (reaction) =>
+                    `${names[reaction.protagonist_id]}: ${Math.round(reaction.support_probability * 100)}% likely to support`,
                 )
                 .join(" · ")}
             </p>

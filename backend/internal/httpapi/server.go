@@ -22,6 +22,7 @@ type Server struct {
 	directory string
 	seed      int64
 	mode      string
+	images    ImageGenerator
 }
 
 type Response struct {
@@ -37,6 +38,18 @@ func New(provider game.Provider, directory string, seed int64, mode string) (*Se
 	}
 	s := &Server{provider: provider, directory: directory, seed: seed, mode: mode}
 	s.world = loadWorld(directory, game.NewWorld(seed, newID()))
+	interrupted := false
+	for i := range s.world.History {
+		if s.world.History[i].IllustrationStatus == "pending" {
+			s.world.History[i].IllustrationStatus = "failed"
+			interrupted = true
+		}
+	}
+	if interrupted {
+		if err := saveWorld(directory, s.world); err != nil {
+			return nil, err
+		}
+	}
 	game.RefreshIncome(&s.world)
 	return s, nil
 }
@@ -78,19 +91,27 @@ func (s *Server) advance(w http.ResponseWriter, r *http.Request) {
 	next, err := game.Advance(r.Context(), current, s.provider)
 	s.mu.Lock()
 	if err == nil {
+		mergeIllustrations(&next, s.world)
+		if s.images != nil {
+			next.History[next.Day-1].IllustrationStatus = "pending"
+		}
 		err = saveWorld(s.directory, next)
 	}
 	if err == nil {
 		s.world = next
 	}
 	s.running = false
+	response := Response{game.Clone(s.world), false, game.MaxDays, s.mode}
 	s.mu.Unlock()
 	if err != nil {
 		log.Printf("advance failed: %v", err)
 		apiError(w, http.StatusBadGateway, "The day's deliberations could not finish. No changes were saved. Please retry; see the server log for details.")
 		return
 	}
-	writeJSON(w, http.StatusOK, s.State())
+	if s.images != nil {
+		go s.illustrate(next.ID, next.History[next.Day-1])
+	}
+	writeJSON(w, http.StatusOK, response)
 }
 
 func (s *Server) reset(w http.ResponseWriter, r *http.Request) {

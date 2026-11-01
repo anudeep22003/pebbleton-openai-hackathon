@@ -71,10 +71,15 @@ func FallbackNewspaper(w World, record DayRecord) Newspaper {
 		}
 	}
 	verdict, consequence := "REJECTED", "The existing income rules remain in place."
-	headline := fmt.Sprintf("%s's grand plan meets a very small majority of doubt", author)
+	rejectedHeadlines := []string{"%s's one-coin dream fails to make change", "%s discovers that no is a complete sentence", "%s's grand plan meets forty small opinions"}
+	headline := fmt.Sprintf(rejectedHeadlines[(record.Day-1)%len(rejectedHeadlines)], author)
+	if record.TotalYes == record.TotalNo {
+		headline = fmt.Sprintf("%s splits the town. The coin stays put.", author)
+	}
 	if record.Passed {
 		verdict = "PASSED"
-		headline = fmt.Sprintf("%s moves one coin. Pebbleton calls it history.", author)
+		passedHeadlines := []string{"%s moves one coin. Pebbleton calls it history.", "%s wins the day. The coin has a new address.", "%s's little plan causes a very big fuss"}
+		headline = fmt.Sprintf(passedHeadlines[(record.Day-1)%len(passedHeadlines)], author)
 		consequence = fmt.Sprintf("Starting tomorrow, %s receive one extra coin of daily income per citizen, while %s give up one. This replaces any previous policy; today's pay is unchanged by the vote.", p.ToFaction, p.FromFaction)
 	}
 	reactions := []string{}
