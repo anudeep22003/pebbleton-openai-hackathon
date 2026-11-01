@@ -1,0 +1,42 @@
+# Pebbleton — A Tiny Society with Big Problems
+
+Forty citizens. Three ambitious neighbours. One daily newspaper. A 30-day society simulator built for OpenAI DevDay, with Go, React, TypeScript and TanStack Query.
+
+## Run locally
+
+Requires Go 1.24+ and Node.js 22.12+ (or 20.19+).
+
+```sh
+make install
+make start
+```
+
+Open **http://127.0.0.1:8080**. Mock mode is the default and needs no API key. `make start` builds the frontend and serves everything from one Go process.
+
+For frontend hot reload, run `make backend` and `make frontend` in separate terminals, then open **http://127.0.0.1:5173**. Vite proxies API and image requests to port 8080.
+
+```sh
+make test       # focused simulation tests
+make simulate   # complete reproducible 30-day mock story
+make format     # gofmt and Prettier
+```
+
+## The rules
+
+Pip, Momo and Zig take turns presenting one of three proposals. Every proposal moves one coin of daily income per citizen between two factions. All forty citizens vote; ties fail. Protagonist reactions do not count as votes. A passed policy replaces the previous policy and affects income starting the following day. Citizens remember attempted policies even when they fail.
+
+Only Go changes the world. The frontend displays server facts, including effective income and historical snapshots. Random sampling uses the configured seed and day number, so retries and restarts preserve mock outcomes. Reset restores the configured seed and gives the new world a distinct identity.
+
+## Configuration
+
+Copy `.env.example` to `.env` to change settings. Make loads this file; direct `go run` reads exported environment variables. `DATA_DIR` defaults to `./data`, `PORT` to `8080`, and `SEED` to `42`. The backend binds to localhost.
+
+Snapshots are atomically written to `data/world.json`. Images belong in `data/images/`. This is a single-process local app: ephemeral disks and multiple backend instances are not supported. Invalid snapshots are reported in the server log and start a fresh Day 0.
+
+## API
+
+- `GET /api/world` returns `{world, running, max_days, mode}`.
+- `POST /api/advance` completes one day and returns the same response shape. Concurrent advancement/reset returns 409; Day 31 returns 422. Failed essential stages or persistence leave the world unchanged.
+- `POST /api/reset` restores Day 0 and returns the same shape.
+
+The newspaper, votes, candidates and probabilities remain in every day record. Historical navigation displays that day's economic and relationship snapshot.
